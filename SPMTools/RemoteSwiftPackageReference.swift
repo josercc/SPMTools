@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftyJSON
 
 struct RemoteSwiftPackageReference: Hashable {
     func hash(into hasher: inout Hasher) {
@@ -17,6 +18,7 @@ struct RemoteSwiftPackageReference: Hashable {
     
     /// 3CBCD1572735149500488F3D
     let uuid:String
+    var name:String?
     let repositoryURL:String
     let requirement:Requirement
     
@@ -35,6 +37,46 @@ struct RemoteSwiftPackageReference: Hashable {
         case .revision(let revision):
             return revision
         }
+    }
+    
+    var jsonValue:JSON {
+        var json = JSON()
+        json["isa"] = JSON("XCRemoteSwiftPackageReference")
+        switch(requirement) {
+        case .upToNextMajorVersion(let version):
+            var requirement = JSON()
+            requirement["kind"] = JSON("upToNextMajorVersion")
+            requirement["minimumVersion"] = JSON(version)
+            json["requirement"] = requirement
+        case .upToNextMinorVersion(let version):
+            var requirement = JSON()
+            requirement["kind"] = JSON("upToNextMinorVersion")
+            requirement["minimumVersion"] = JSON(version)
+            json["requirement"] = requirement
+        case .versionRange(let minimumVersion, let maximumVersion):
+            var requirement = JSON()
+            requirement["kind"] = JSON("versionRange")
+            requirement["minimumVersion"] = JSON(minimumVersion)
+            requirement["maximumVersion"] = JSON(maximumVersion)
+            json["requirement"] = requirement
+        case .branch(let branch):
+            var requirement = JSON()
+            requirement["kind"] = JSON("branch")
+            requirement["branch"] = JSON(branch)
+            json["requirement"] = requirement
+        case .exactVersion(let version):
+            var requirement = JSON()
+            requirement["kind"] = JSON("exactVersion")
+            requirement["version"] = JSON(version)
+            json["requirement"] = requirement
+        case .revision(let revision):
+            var requirement = JSON()
+            requirement["kind"] = JSON("revision")
+            requirement["revision"] = JSON(revision)
+            json["requirement"] = requirement
+        }
+        
+        return json
     }
 }
 

@@ -6,13 +6,17 @@
 //
 
 import SwiftUI
+import CryptoKit
 
 @main
 struct SPMToolsApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .frame(minWidth:800, minHeight: 600)
+                .frame(minWidth:500, minHeight:400)
+                .onAppear {
+  
+                }
         }
     }
 }
