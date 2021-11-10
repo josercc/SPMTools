@@ -87,7 +87,7 @@ struct XcodeProjectHelp {
                 objects[element.key] = jsonValue
             } else if element.key == uuid {
                 objects.removeValue(forKey: uuid)
-            }
+            } 
         }
         var newJson = json
         newJson["objects"] = JSON(objects)
@@ -99,20 +99,22 @@ struct XcodeProjectHelp {
         var objects = json["objects"].dictionaryValue
         for element in objects {
             var jsonValue = element.value
-            if var packageReferences = jsonValue["packageReferences"].arrayObject as? [String] {
-                packageReferences.append(package.uuid)
+            if let isa = jsonValue["isa"].string,
+                isa == "PBXProject" {
+                var packageReferences = jsonValue["packageReferences"].arrayValue
+                packageReferences.append(JSON(package.uuid))
                 jsonValue["packageReferences"] = JSON(packageReferences)
                 objects[element.key] = jsonValue
             }
         }
         
-        if let name = package.name {
-            var productJson = JSON()
-            productJson["isa"] = JSON("XCSwiftPackageProductDependency")
-            productJson["package"] = JSON(package.uuid)
-            productJson["productName"] = JSON(name)
-            objects[UUID().uuidString] = productJson
-        }
+//        if let name = package.name {
+//            var productJson = JSON()
+//            productJson["isa"] = JSON("XCSwiftPackageProductDependency")
+//            productJson["package"] = JSON(package.uuid)
+//            productJson["productName"] = JSON(name)
+//            objects[UUID().uuidString] = productJson
+//        }
         
         var packageJson = package.jsonValue
         packageJson["repositoryURL"] = JSON(package.repositoryURL)

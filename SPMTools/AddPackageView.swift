@@ -12,95 +12,155 @@ struct AddPackageView: View {
     @State var packageURL:String = ""
     @State var leftInputText:String = ""
     @State var rightInputText:String = ""
-    @State var currentRequement:String?
+    @State var currentRequement:Requirment = .nextMajor
     
-    var didAddpackageHandle:((RemoteSwiftPackageReference) -> Void)?
+    typealias AddOrEditHandle = (RemoteSwiftPackageReference) -> Void
+    typealias CancelHandle = () -> Void
+    
+    var addOrEditHandle:AddOrEditHandle?
+    var cancelHandle:CancelHandle?
+    
+    private var editPakcage:RemoteSwiftPackageReference?
+    
+    init(package:RemoteSwiftPackageReference? = nil,
+         handle:@escaping AddOrEditHandle,
+         cancel:@escaping CancelHandle) {
+        addOrEditHandle = handle
+        cancelHandle = cancel
+        editPakcage = package
+    }
+    
+    
+    
+    private var supportRequirments:[Requirment] = [
+        .nextMajor,
+        .nextMinor,
+        .range,
+        .version,
+        .branch,
+        .revision
+    ]
+    
+    private var addButtonEnable:Bool {
+        guard !packageURL.isEmpty else {
+            return false
+        }
+        guard !packageName.isEmpty else {
+            return false
+        }
+        if currentRequement == .range {
+            return !leftInputText.isEmpty && !rightInputText.isEmpty
+        } else {
+            return !leftInputText.isEmpty
+        }
+    }
+    
     
     var body: some View {
         Form {
-            TextField("请输入URL", text: $packageURL)
-            TextField("请输入包名", text: $packageName)
-            MenuButton(label: Text(currentRequement ?? "请选择依赖")) {
-                Button("NextMajor") {
-                    currentRequement = "NextMajor"
-                }
-                Button("NextMinor") {
-                    currentRequement = "NextMinor"
-                }
-                Button("Range") {
-                    currentRequement = "Range"
-                }
-                Button("Version") {
-                    currentRequement = "Version"
-                }
-                Button("Branch") {
-                    currentRequement = "Branch"
-                }
-                Button("Revision") {
-                    currentRequement = "Revision"
-                }
-            }
-            if let currentRequement = currentRequement {
-                if currentRequement == "Range" {
-                    HStack {
-                        TextField("请输入最小版本", text: $leftInputText)
-                        Text("-")
-                        TextField("请输入最大版本", text: $rightInputText)
+            TextField("Package Url:", text: $packageURL)
+            TextField("Package Name:", text: $packageName)
+            Section("Requirement:") {
+                Menu(currentRequement.rawValue) {
+                    ForEach(supportRequirments, id:\.self) { element in
+                        Button(element.rawValue) {
+                            currentRequement = element
+                        }
                     }
-                } else if currentRequement == "NextMajor" || currentRequement == "NextMinor" {
-                    TextField("请输入最低支持版本", text: $leftInputText)
-                } else if currentRequement == "Version" {
-                    TextField("请输入指定版本", text: $leftInputText)
-                } else if currentRequement == "Branch" {
-                    TextField("请输入指定分支", text: $leftInputText)
-                } else if currentRequement == "Revision" {
-                    TextField("请输入指定提交", text: $leftInputText)
                 }
             }
-            Button("添加") {
-                guard let currentRequement = currentRequement else {
-                    return
-                }
-                if currentRequement == "NextMajor" {
-                    didAddpackageHandle?(.init(uuid: UUID().uuidString,
-                                               name: packageName,
-                                               repositoryURL: packageURL,
-                                               requirement: .upToNextMajorVersion(leftInputText)))
-                } else if currentRequement == "NextMinor" {
-                    didAddpackageHandle?(.init(uuid: UUID().uuidString,
-                                               name: packageName,
-                                               repositoryURL: packageURL,
-                                               requirement: .upToNextMinorVersion(leftInputText)))
-                } else if currentRequement == "Range" {
-                    didAddpackageHandle?(.init(uuid: UUID().uuidString,
-                                               name: packageName,
-                                               repositoryURL: packageURL,
-                                               requirement: .versionRange(leftInputText, rightInputText)))
-                } else if currentRequement == "Version" {
-                    didAddpackageHandle?(.init(uuid: UUID().uuidString,
-                                               name: packageName,
-                                               repositoryURL: packageURL,
-                                               requirement: .exactVersion(leftInputText)))
-                } else if currentRequement == "Branch" {
-                    didAddpackageHandle?(.init(uuid: UUID().uuidString,
-                                               name: packageName,
-                                               repositoryURL: packageURL,
-                                               requirement: .branch(leftInputText)))
-                } else if currentRequement == "Revision" {
-                    didAddpackageHandle?(.init(uuid: UUID().uuidString,
-                                               name: packageName,
-                                               repositoryURL: packageURL,
-                                               requirement: .revision(leftInputText)))
-                }
-            }.disabled(currentRequement == nil)
+            if currentRequement == .nextMajor
+                || currentRequement == .nextMinor {
+                TextField("min version:", text: $leftInputText)
+            } else if currentRequement == .range {
+                TextField("Min Version:", text: $leftInputText)
+                TextField("Max Version:", text: $rightInputText)
+            } else if currentRequement == .version {
+                TextField("Version:", text:$leftInputText)
+            } else if currentRequement == .branch {
+                TextField("Branch:", text:$leftInputText)
+            } else if currentRequement == .revision {
+                TextField("Revision:", text:$leftInputText)
+            }
             Spacer()
-        }.padding()
+            HStack {
+                Button("新增", action: addClick)
+                    .disabled(!addButtonEnable)
+                Button("取消", action: cancelClick)
+            }
+        }
+        .padding()
+        .onAppear {
+            if let package = editPakcage {
+                packageName = package.name ?? ""
+                packageURL = package.repositoryURL
+                switch (package.requirement) {
+                case .upToNextMajorVersion(let version):
+                    currentRequement = .nextMajor
+                    leftInputText = version
+                case .upToNextMinorVersion(let version):
+                    leftInputText = version
+                    currentRequement = .nextMinor
+                case .versionRange(let min, let max):
+                    leftInputText = min
+                    rightInputText = max
+                    currentRequement = .range
+                case .branch(let branch):
+                    leftInputText = branch
+                    currentRequement = .branch
+                case .exactVersion(let version):
+                    leftInputText = version
+                    currentRequement = .version
+                case .revision(let revision):
+                    leftInputText = revision
+                    currentRequement = .revision
+                }
+            }
+        }
+    }
+    
+    
+    
+    func addClick() {
+        let requirement:RemoteSwiftPackageReference.Requirement
+        switch(currentRequement) {
+        case .nextMajor:
+            requirement = .upToNextMajorVersion(leftInputText)
+        case .nextMinor:
+            requirement = .upToNextMinorVersion(leftInputText)
+        case .range:
+            requirement = .versionRange(leftInputText, rightInputText)
+        case .version:
+            requirement = .exactVersion(leftInputText)
+        case .branch:
+            requirement = .branch(leftInputText)
+        case .revision:
+            requirement = .revision(leftInputText)
+        }
+        let package = RemoteSwiftPackageReference(uuid: UUID().uuidString,
+                                                  name: packageName,
+                                                  repositoryURL: packageURL,
+                                                  requirement: requirement)
+        addOrEditHandle?(package)
+    }
+    
+    func cancelClick() {
+        cancelHandle?()
+    }
+    
+    enum Requirment:String {
+        case nextMajor
+        case nextMinor
+        case range
+        case version
+        case branch
+        case revision
     }
 }
 
 struct AddPackageView_Previews: PreviewProvider {
     static var previews: some View {
-        AddPackageView()
+        AddPackageView(handle: {_ in}, cancel: {})
             .frame(width: 500, height: 400, alignment: .center)
     }
 }

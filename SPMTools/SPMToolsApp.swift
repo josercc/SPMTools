@@ -12,11 +12,8 @@ import CryptoKit
 struct SPMToolsApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootContentView()
                 .frame(minWidth:500, minHeight:400)
-                .onAppear {
-  
-                }
         }
     }
 }
