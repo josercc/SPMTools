@@ -108,13 +108,13 @@ struct XcodeProjectHelp {
             }
         }
         
-//        if let name = package.name {
-//            var productJson = JSON()
-//            productJson["isa"] = JSON("XCSwiftPackageProductDependency")
-//            productJson["package"] = JSON(package.uuid)
-//            productJson["productName"] = JSON(name)
-//            objects[UUID().uuidString] = productJson
-//        }
+        if let name = package.name {
+            var productJson = JSON()
+            productJson["isa"] = JSON("XCSwiftPackageProductDependency")
+            productJson["package"] = JSON(package.uuid)
+            productJson["productName"] = JSON(name)
+            objects[UUID().uuidString] = productJson
+        }
         
         var packageJson = package.jsonValue
         packageJson["repositoryURL"] = JSON(package.repositoryURL)

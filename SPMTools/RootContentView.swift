@@ -153,8 +153,11 @@ struct RootContentView: View {
     func addPackage(package:RemoteSwiftPackageReference) {
         do {
             let help = try XcodeProjectHelp(file: xcodeprojFile)
+            if let exitPackage = findExitPackage(packageUrl: package.repositoryURL) {
+                try help.removePackage(uuid: exitPackage.uuid)
+            }
             try help.addPackage(package: package)
-            remotePackages.append(package)
+            remotePackages = help.parsePackageReference()
         } catch {
             showError(error: error.localizedDescription)
         }
@@ -163,9 +166,11 @@ struct RootContentView: View {
     func editPackage(package:RemoteSwiftPackageReference) {
         do {
             let help = try XcodeProjectHelp(file: xcodeprojFile)
-            try help.removePackage(uuid: package.uuid)
+            if let exitPackage = findExitPackage(packageUrl: package.repositoryURL) {
+                try help.removePackage(uuid: exitPackage.uuid)
+            }
             try help.addPackage(package: package)
-            
+            remotePackages = help.parsePackageReference()
         } catch {
             showError(error: error.localizedDescription)
         }
@@ -195,6 +200,10 @@ struct RootContentView: View {
     func showError(error:String) {
         errorMessage = error
         isShowError = true
+    }
+    
+    func findExitPackage(packageUrl:String) -> RemoteSwiftPackageReference? {
+        return remotePackages.first(where: {$0.repositoryURL == packageUrl})
     }
 }
 
