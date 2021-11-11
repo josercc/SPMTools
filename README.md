@@ -29,3 +29,6 @@ xcodebuild -resolvePackageDependencies
 ```
 
 If you find any problems during use, please return in time, thank you.
+
+# If you want to speed up the Swift Package Manager library
+https://github.com/josercc/spm_mirror
