@@ -4,27 +4,28 @@ typora-root-url: ./images
 
 # SPMTools
 
-一款基于SwiftUI构建管理Xcode依赖的图形工具
+A graphical tool for building and managing Xcode Swift Package Manager based on SwiftUI, which can be quickly added to the Chinese region, and it is convenient to use the Swift Package Manager faster through the terminal agent.
 
-![image-20211109162717174](image-20211109162717174.png)
+<img src="https://gitee.com/joser_zhang/upic/raw/master/uPic/image-20211111093350604.png" alt="image-20211111093350604" style="zoom:50%;" />
 
-## 读取 Xcode 的 Swift Package Manager 的依赖配置
+## Install
 
-![image-20211109162938462](/../image-20211109162938462.png)
+https://github.com/josercc/SPMTools/releases
 
-![image-20211109162907571](/../image-20211109162907571.png)
+## How To Use
 
-## 删除依赖
+In the first step, you must select the xcodeproj file as the data source
 
-![image-20211109163009917](/../image-20211109163009917.png)
+<img src="https://gitee.com/joser_zhang/upic/raw/master/uPic/image-20211111093642944.png" alt="image-20211111093642944" style="zoom:50%;" />
 
-## 添加依赖
+Then you can add, delete, edit and other operations for Swift Package Manager dependencies.
 
-![image-20211109163035866](/../image-20211109163035866.png)
+<img src="https://gitee.com/joser_zhang/upic/raw/master/uPic/image-20211111093740431.png" alt="image-20211111093740431" style="zoom:50%;" />
 
-⚠️此操作还需要通过命令行更新依赖
+When all dependencies are ready, we can open the project terminal. Set up the proxy in advance, and then execute the following command to update the dependency.
 
-```shell
+```swift
 xcodebuild -resolvePackageDependencies
 ```
 
+If you find any problems during use, please return in time, thank you.
