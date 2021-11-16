@@ -139,9 +139,10 @@ struct RootContentView: View {
             return nil
         }
         // file:///Users/king/Documents/SPMTools/SPMTools.xcodeproj/
-        guard let url = openPanel.url?.absoluteString else {
+        guard var url = openPanel.url?.absoluteString else {
             return nil
         }
+        url = url.replacingOccurrences(of: "%20", with: " ")
         return url.replacingOccurrences(of: "file://", with: "")
     }
     
